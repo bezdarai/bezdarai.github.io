@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NeuroBox</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="sidebar">
+    <h3>История</h3>
+    <ul id="history"></ul>
+</div>
+
+<div class="main">
+    <h1>🧠 NeuroBox</h1>
+    <p>Привет, {{user}} 👋</p>
+
+    <div class="modes">
+        <button onclick="mode='chat'">Чат</button>
+        <button onclick="mode='image'">Картинка</button>
+        <button onclick="mode='avatar'">Аватарка</button>
+        <button onclick="mode='video'">Видео</button>
+    </div>
+
+    <textarea id="text"></textarea>
+    <button onclick="send()">GO</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+let mode = "chat";
+
+fetch("/history").then(r=>r.json()).then(d=>{
+    history.innerHTML = d.map(x=>`<li>${x}</li>`).join("");
+});
+
+function send() {
+    let t = text.value;
+    let url = "/" + mode;
+    if (mode === "avatar") url = "/image";
+
+    fetch(url, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({text:t})
+    })
+    .then(r=>r.json())
+    .then(d=>{
+        if(d.reply) result.innerHTML = d.reply;
+        if(d.url) result.innerHTML = `<img src="${d.url}">`;
+        if(d.video) result.innerHTML = `<video controls src="${d.video}"></video>`;
+    });
+}
+</script>
+
+</body>
+</html>
